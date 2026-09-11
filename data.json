@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "name": "Nguyen Quoc Thang",
+    "email": "a@gmail.com",
+    "age": 25
+  },
+  {
+    "id": 2,
+    "name": "Nguyen Duc A",
+    "email": "g@gmail.com",
+    "age": 25
+  },
+  {
+    "id": 4,
+    "name": "Nguyen Van C",
+    "email": "d@gmail.com",
+    "age": 22
+  }
+]
