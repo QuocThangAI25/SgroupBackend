@@ -5,6 +5,7 @@ import {
   BadRequestError,
 } from "../core/error.response.js";
 import { uploadToR2, deleteFromR2 } from "../utils/s3.helper.js"; // <--- Import helper R2
+import { hashPassword } from "../utils/password.helper.js";
 
 export const getAllUsers = async (query) => {
   return await userRepository.findAll(query);
@@ -26,7 +27,8 @@ export const createUser = async (userData) => {
   if (existingUser) {
     throw new ConflictError("Email already exists");
   }
-
+  const hashedPassword = await hashPassword(userData.password);
+  userData.password = hashedPassword;
   return await userRepository.create(userData);
 };
 

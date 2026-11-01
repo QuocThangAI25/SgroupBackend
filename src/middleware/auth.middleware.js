@@ -1,12 +1,11 @@
 // src/middleware/auth.middleware.js
-import { UnauthorizedError } from "../core/error.response.js";
+import { UnauthorizedError, ForbiddenError } from "../core/error.response.js";
 import { verifyToken } from "../utils/jwt.helper.js";
 
+// 1. Middleware Xác thực Đăng nhập (Authentication)
 export const authenticateToken = (req, res, next) => {
-  // 1. Lấy giá trị từ Authorization Header
   const authHeader = req.headers["authorization"];
 
-  // Header chuẩn có dạng: "Bearer eyJhbGciOi..."
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     throw new UnauthorizedError(
       "Bạn chưa đăng nhập! Vui lòng cung cấp token hợp lệ.",
@@ -16,13 +15,8 @@ export const authenticateToken = (req, res, next) => {
   const token = authHeader.split(" ")[1];
 
   try {
-    // 2. Xác thực và giải mã token
     const decoded = verifyToken(token);
-
-    // 3. Gán payload đã decode vào request để các controller phía sau dùng
-    req.user = decoded;
-
-    // 4. Cho phép đi tiếp vào Controller
+    req.user = decoded; // Dữ liệu payload token: { id, email, role }
     next();
   } catch (error) {
     if (error.name === "TokenExpiredError") {
@@ -34,4 +28,17 @@ export const authenticateToken = (req, res, next) => {
       "Token không hợp lệ hoặc đã bị chỉnh sửa trái phép!",
     );
   }
+};
+
+// 2. Middleware Phân quyền Tĩnh theo Role (Authorization - VD: ADMIN)
+export const authorize = (...allowedRoles) => {
+  // Dùng .flat() để xử lý an toàn dù truyền vào là chuỗi hay mảng
+  const rolesArray = allowedRoles.flat();
+
+  return (req, res, next) => {
+    if (!req.user || !rolesArray.includes(req.user.role)) {
+      throw new ForbiddenError("Bạn không có quyền thực hiện hành động này!");
+    }
+    next();
+  };
 };
